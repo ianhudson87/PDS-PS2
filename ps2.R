@@ -57,10 +57,10 @@ vote.choice<-function(candidate){
   
 }
 
-vote.choice('Clinton')
-vote.choice('Trump')
-vote.choice('Other')
-vote.choice('a')
+# vote.choice('Clinton')
+# vote.choice('Trump')
+# vote.choice('Other')
+# vote.choice('a')
 
 
 # part 4
@@ -69,22 +69,52 @@ library(fivethirtyeight)
 head(cabinet_turnover)
 
 
-# create dictionary in the form of a dataframe to get serving time of each president
-presidents<-unique(cabinet_turnover$president)
-class(presidents)
 
-time<-c(1461,2922,1461,2922,2922,2922,1005)
-class(time)
-length(presidents)
-length(time)
-term.time<-data.frame('president'=presidents, 'time'=time)
-str(term.time)
-term.time[term.time$president=='Obama','time']
+
+# description: gets the number of days a president served in office
+# input: president's name as a string
+# output: number of days the president served in office as a numeric
+get.term.time<-function(president){
+  presidents<-unique(cabinet_turnover$president)
+  time<-c(1461,2922,1461,2922,2922,2922,1105)
+  # create dictionary in the form of a dataframe to get serving time of each president
+  term.time<-data.frame('president'=presidents, 'time'=time)
+  return(term.time[term.time$president==president,'time'])
+}
+
 
 appoint<-function(president.name){
   mask<-cabinet_turnover$president==president.name # create mask to filter out all entries that aren't of the president passed in the argument
   data<-cabinet_turnover[mask,] # apply mask
-  head(data)
+  data<-data[!is.na(data$days),] # remove entries that have have no length
+  
+  avg.days<-mean(data$days) # get average time for oppointee
+  proportion<-avg.days/get.term.time(president.name) # divide it by number of days the president served in office
 }
 
-appoint('Bush 41')
+# a<-appoint('Reagan')
+# a
+
+
+head(congress_age)
+era_mask<-congress_age[,'state'] == 'TX'
+data<-congress_age[era_mask,]
+data
+mean(data$age)
+# part 5
+congress_stats<-function(group.var){
+
+  groups<-unique(congress_age[,group.var])
+  df<-data.frame('group'=groups, 'avg.age'=NA) # create data frame to store data
+  
+  for(group in groups){
+    group_mask<-congress_age[,group.var] == group # mask to only get entries in the era
+    data<-congress_age[group_mask,] # apply the mask
+    avg.age<-mean(data$age)
+    df[df$group==group,'avg.age']<-avg.age # get all entries in the era and set the average age to the computed value
+  }
+  return(df)
+
+}
+congress_stats('state')
+
